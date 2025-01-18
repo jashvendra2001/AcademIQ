@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -27,12 +27,9 @@ const CourseEditpage = () => {
   const params = useParams();
   const courseId = params.id;
 
-  
-
+  const navigate = useNavigate();
   const { data } = useGetDatabyIdQuery(courseId);
-
   console.log(data);
-
   const [input, setInput] = useState({
     courseTitle: "",
     subTitle: "",
@@ -116,11 +113,17 @@ const CourseEditpage = () => {
     }
   }, [data]);
 
+  const handleLecturePage = () => {
+    navigate(`/Admin/Admin/lectureCourse/${courseId}`);
+  };
+
   return (
     <div className="w-full pt-3">
       <div className="editpageSection1 flex justify-between ">
         <h2 className="font-bold">Add detail information regards courses </h2>
-        <Button varient="underline">Go to lecture page</Button>
+        <Button varient="underline" onClick={handleLecturePage}>
+          Go to lecture page
+        </Button>
       </div>
 
       <div className="main w-full mt-5  border p-3">
@@ -199,7 +202,7 @@ const CourseEditpage = () => {
                     <SelectLabel>Levels</SelectLabel>
                     <SelectItem value="Beginner">Beginner</SelectItem>
                     <SelectItem value="Intermediate">Intermediate</SelectItem>
-                    <SelectItem value="Advanced">Advanced</SelectItem>
+                    <SelectItem value="Advanced">Advanced123</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>

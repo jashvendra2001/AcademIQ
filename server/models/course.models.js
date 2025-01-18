@@ -18,11 +18,10 @@ const createCourse = new mongoose.Schema(
     },
     courseLevel: {
       type: String,
-      enum: ["beginner", "medium", "Advance"],
+      enum: ["Beginner", "Intermediate", "Advanced"], // Ensure 'Intermediate' is included
     },
     coursePrice: {
       type: Number,
-      required: true,
     },
     courseThumbnail: {
       type: String,
@@ -34,10 +33,12 @@ const createCourse = new mongoose.Schema(
       },
     ],
 
-    lectures: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Lecture",
-    },
+    lectures: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Lecture",
+      },
+    ],
     creator: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

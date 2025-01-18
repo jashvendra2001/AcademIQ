@@ -1,9 +1,11 @@
 import { Course } from "../models/course.models.js";
+import Lecture from "../models/lecture.js";
 import { uploadResponse } from "../utils/cloudinary.js";
+
 export const courseSchema = async (req, res) => {
-  const { courseTitle, description, coursePrice = "13243242323" } = req.body;
+  const { courseTitle, description } = req.body;
   console.log(courseTitle, description);
-  if (!courseTitle || !description || !coursePrice) {
+  if (!courseTitle || !description) {
     return res.status(400).json({
       success: false,
       message: "all fields are required",
@@ -13,9 +15,10 @@ export const courseSchema = async (req, res) => {
   const createCourse = await Course.create({
     courseTitle,
     description,
-    coursePrice,
+
     creator: req.id,
   });
+  createCourse.save();
 
   return res.status(200).json({
     success: true,
@@ -213,4 +216,158 @@ export const getDatabyId = async (req, res) => {
     message: "course found successfully",
     courseByID,
   });
+};
+
+export const lecture = async (req, res) => {
+  try {
+    const { lectureTitle } = req.body;
+    const courseId = req.params.id;
+
+    console.log(lectureTitle, courseId);
+    if (!lectureTitle || !courseId) {
+      return res.status(400).json({
+        success: false,
+        message: "lectureTitle is  neccesary please provide",
+      });
+    }
+
+    const lecture = await Lecture.create({ lectureTitle });
+    if (!lecture) {
+      return res.status(401).json({
+        success: false,
+        message: "lecture not create successfully",
+      });
+    }
+
+    const coursePushLecture = await Course.findById(courseId);
+    if (!coursePushLecture) {
+      return res.status(401).json({
+        success: false,
+        message: "coursePushLecture not create successfully",
+      });
+    }
+    if (coursePushLecture) {
+      coursePushLecture.lectures.push(lecture._id);
+      await coursePushLecture.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "lecture create successfully",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getCourseLecture = async (req, res) => {
+  try {
+    const courserId = req.params.id;
+
+    const courseLectureData = await Course.findById(courserId).populate(
+      "lectures"
+    );
+    if (!courseLectureData) {
+      return res.status(401).json({
+        success: false,
+        message: "lecturecourse is not found successfully",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "lectureCourse Found successfully",
+      courseLectureData,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const videoUpload = async (req, res) => {
+  const file = req.file ? req.file.path || req.file : null;
+  console.log(file);
+
+  const responseVideo = await uploadResponse(file, {
+    resource_type: "video", // Make sure to specify 'video' type
+    public_id: `your_folder_name/${file.originalname}`,
+  });
+  if (!responseVideo) {
+    return res.status(401).json({
+      success: false,
+      message: "response video is not found",
+      data: responseVideo,
+    });
+  }
+  return res.status(200).json({
+    success: true,
+    message: "video upload successfully",
+    responseVideo,
+  });
+};
+
+export const lectureUpadate = async (req, res) => {
+  const courseLectureId = req.params.id;
+
+  console.log(courseId);
+  const userID = req.id;
+  console.log(courseLectureId);
+
+  const { lectureTitle, videoUrl, isPreviewFree } = req.body;
+  console.log(lectureTitle);
+
+  if (!lectureTitle) {
+    return res.status(400).json({
+      success: false,
+      message: "lecture title is required ",
+    });
+  }
+
+  const data = {
+    lectureTitle,
+    videoUrl,
+    isPreviewFree,
+    publicId: userID,
+  };
+
+  const updatedLecture = await Lecture.findByIdAndUpdate(
+    courseLectureId,
+    data,
+    {
+      new: true,
+    }
+  );
+
+  if (!updatedLecture) {
+    return res.status(400).json({
+      success: false,
+      message: "updatedLecture",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "lecture update successfully",
+    updatedLecture,
+  });
+};
+
+export const deleteCourseLecture = async (req, res) => {
+  try {
+    const courseId = req.params.courseId;
+    console.log(courseId + "janfdj");
+    const deleteCourse = await Lecture.findByIdAndDelete(courseId);
+    if (!deleteCourse) {
+      return res.status(400).json({
+        success: false,
+        message: "course does not delete",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "courseLecture is deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
